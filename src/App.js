@@ -1,6 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { darkTheme } from "./theme";
-import React, { useCallback, useMemo, useRef } from "react";
+import React, { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import StyleSheetValidation from "react-native/Libraries/StyleSheet/StyleSheetValidation";
 import {
@@ -12,8 +12,31 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
+import Btn from "./component/cus_Btn"
 
 const App = () => {
+  const [ativeBtn, setAtiveBtn] = useState(false);
+  const [text, setText] = useState("");
+  //const MemorizedBtn= React.memo(Btn);  //리렌더링 방지 코드 
+
+  useEffect(() => {
+    if(text==="")
+    {
+      setAtiveBtn(false)
+      return ;
+    }
+    setAtiveBtn(true)
+  }, [text]);
+  const onSubmitSoloRoom=()=>{
+    if(text===""){
+      return
+    }
+    setText("");
+
+  } 
+
+  const onChangeText =(prev)=>setText(prev);
+  
   const bottomSheetModalRef = useRef(null);
   // variables
   const snapPoints = useMemo(() => ["50%"], []);
@@ -33,8 +56,10 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="auto" />
+      
       <BottomSheetModalProvider>
         <View style={styles.container}>
+          
           <View style={styles.title}>
             <Text style={styles.titleText}>Clog ProtoType</Text>
             {/* <TextInput
@@ -45,6 +70,7 @@ const App = () => {
           </View>
           <View style={styles.body}>
             <View style={styles.bottomBar}>
+          
               <TouchableOpacity onPress={() => alert("혼자 하는중")}>
                 <Text style={styles.btnSty}>블로그</Text>
               </TouchableOpacity>
@@ -63,19 +89,17 @@ const App = () => {
               <View style={styles.inputTitle}>
                 <Text>제목(20자이내)</Text>
                 <BottomSheetTextInput
+                onChangeText={onChangeText}
+                  value={text}
                   onSubmitEditing={() => handleSnapPress(0)}
+                  returnKeyType="done"
                   placeholder="제목을 입력해 주세요"
                   placeholderTextColor="rgba(0, 0, 0, 0.2)"
-                  style={styles.input}
+                  style={styles.bottomInput}
                 />
               </View>
               <View style={styles.buttonsheetBtn_view}>
-                <TouchableOpacity
-                  style={styles.bottomsheetBtn}
-                  onPress={() => console.log("완료!")}
-                >
-                  <Text style={styles.btnText}>완료</Text>
-                </TouchableOpacity>
+                <Btn name={"완료"} ative={ativeBtn} onPress={onSubmitSoloRoom}/>
               </View>
             </View>
           </BottomSheetModal>
@@ -128,20 +152,14 @@ const styles = StyleSheet.create({
   inputTitle: {
     flex: 1,
   },
-  input: {
+  bottomInput: {
+    flexWrap:"wrap",
     paddingTop: 10,
     borderBottomColor: "rgba(0, 0, 0, 0.2)", // Add this to specify bottom border color
     borderBottomWidth: 1.5, // Add this to specify bottom border thickness
   },
   buttonsheetBtn_view: {
     flex: 1,
-  },
-  btnText: {
-    padding: 20,
-    backgroundColor: "blue",
-    textAlign: "center",
-    fontSize: 20,
-    color: "white",
   },
 });
 
