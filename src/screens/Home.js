@@ -1,8 +1,7 @@
 import { StatusBar } from "expo-status-bar";
-import { darkTheme } from "./theme";
+import { darkTheme } from "../theme";
 import React, { useCallback, useMemo, useRef, useEffect, useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import StyleSheetValidation from "react-native/Libraries/StyleSheet/StyleSheetValidation";
 import {
   GestureHandlerRootView,
   TextInput,
@@ -12,13 +11,20 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import Btn from "./component/cus_Btn"
+import Btn from "../component/cus_Btn"
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const App = () => {
+const STORAGE_ROOM_NAME_KEY="@RoomName";
+
+const Home = ({navigation}) => {
   const [ativeBtn, setAtiveBtn] = useState(false);
   const [text, setText] = useState("");
   //const MemorizedBtn= React.memo(Btn);  //리렌더링 방지 코드 
 
+  useEffect(async()=>{
+    // const s=await AsyncStorage.getItem(STORAGE_ROOM_NAME_KEY);
+    // console.log("불러오기"+s)
+  },[])
   useEffect(() => {
     if(text==="")
     {
@@ -27,13 +33,19 @@ const App = () => {
     }
     setAtiveBtn(true)
   }, [text]);
-  const onSubmitSoloRoom=()=>{
+  const onSubmitSoloRoom=async()=>{
     if(text===""){
       return
     }
+    textInput.current.clear()
+    await AsyncStorage.setItem(STORAGE_ROOM_NAME_KEY, text);
+    const title=text;
     setText("");
-
+    navigation.navigate('Details',{
+      title: title
+    })
   } 
+  const textInput=useRef();
 
   const onChangeText =(prev)=>setText(prev);
   
@@ -89,8 +101,10 @@ const App = () => {
               <View style={styles.inputTitle}>
                 <Text>제목(20자이내)</Text>
                 <BottomSheetTextInput
-                onChangeText={onChangeText}
-                  value={text}
+                  ref={textInput}
+                  onChangeText={onChangeText}
+                  autoCapitalize="none"
+                  autoCorrect={false}
                   onSubmitEditing={() => handleSnapPress(0)}
                   returnKeyType="done"
                   placeholder="제목을 입력해 주세요"
@@ -153,7 +167,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bottomInput: {
-    flexWrap:"wrap",
     paddingTop: 10,
     borderBottomColor: "rgba(0, 0, 0, 0.2)", // Add this to specify bottom border color
     borderBottomWidth: 1.5, // Add this to specify bottom border thickness
@@ -163,4 +176,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default Home;
