@@ -1,7 +1,19 @@
 import { StatusBar } from "expo-status-bar";
 import { darkTheme } from "../theme";
-import React, { useCallback, useMemo, useRef, useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+  useState,
+} from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Keyboard,
+} from "react-native";
 import {
   GestureHandlerRootView,
   TextInput,
@@ -11,44 +23,66 @@ import BottomSheet, {
   BottomSheetModalProvider,
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
-import Btn from "../component/cus_Btn"
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import Btn from "../component/cus_Btn";
+import dataManager from "../dataManager";
+import serverManager from "../serverManager";
 
-const STORAGE_ROOM_NAME_KEY="@RoomName";
-
-const Home = ({navigation}) => {
+const Home = ({ navigation }) => {
   const [ativeBtn, setAtiveBtn] = useState(false);
   const [text, setText] = useState("");
-  //const MemorizedBtn= React.memo(Btn);  //리렌더링 방지 코드 
+  //const MemorizedBtn= React.memo(Btn);  //리렌더링 방지 코드
 
-  useEffect(async()=>{
+  useEffect(async () => {
     // const s=await AsyncStorage.getItem(STORAGE_ROOM_NAME_KEY);
     // console.log("불러오기"+s)
-  },[])
+  }, []);
   useEffect(() => {
-    if(text==="")
-    {
-      setAtiveBtn(false)
-      return ;
-    }
-    setAtiveBtn(true)
-  }, [text]);
-  const onSubmitSoloRoom=async()=>{
-    if(text===""){
-      return
-    }
-    textInput.current.clear()
-    await AsyncStorage.setItem(STORAGE_ROOM_NAME_KEY, text);
-    const title=text;
-    setText("");
-    navigation.navigate('Details',{
-      title: title
-    })
-  } 
-  const textInput=useRef();
+    serverManager.loginAuto();
+    const showSubscription = Keyboard.addListener("keyboardDidShow", (e) => {
+      //sheetRef.current.snapToIndex(0);
+      //setKeyboardHeight(e.endCoordinates.height);
+      dataManager.setValueForKeyBoardHeight(e.endCoordinates.height.toString());
+      // await AsyncStorage.setItem(
+      //   STORAGE_KEYBOARD_HEIGHT_KEY,
+      //   e.endCoordinates.height.toString()
+      // );
+    });
+    const hideSubscription = Keyboard.addListener("keyboardDidHide", (e) => {});
 
-  const onChangeText =(prev)=>setText(prev);
-  
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (text === "") {
+      setAtiveBtn(false);
+      return;
+    }
+    setAtiveBtn(true);
+  }, [text]);
+  const onSubmitSoloRoom = (roomName) => {
+    console.log("클릭" + roomName);
+    if (text === "") {
+      if (roomName === "Clogs") {
+        navigation.navigate(roomName);
+      }
+      return;
+    }
+    textInput.current.clear();
+    dataManager.setRoomName(text);
+    const title = text;
+    setText("");
+    handleClosePress();
+    navigation.navigate(roomName, {
+      title: title,
+    });
+  };
+  const textInput = useRef();
+
+  const onChangeText = (prev) => setText(prev);
+
   const bottomSheetModalRef = useRef(null);
   // variables
   const snapPoints = useMemo(() => ["50%"], []);
@@ -68,10 +102,9 @@ const Home = ({navigation}) => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <StatusBar style="auto" />
-      
+
       <BottomSheetModalProvider>
         <View style={styles.container}>
-          
           <View style={styles.title}>
             <Text style={styles.titleText}>Clog ProtoType</Text>
             {/* <TextInput
@@ -82,8 +115,7 @@ const Home = ({navigation}) => {
           </View>
           <View style={styles.body}>
             <View style={styles.bottomBar}>
-          
-              <TouchableOpacity onPress={() => alert("혼자 하는중")}>
+              <TouchableOpacity onPress={() => onSubmitSoloRoom("Clogs")}>
                 <Text style={styles.btnSty}>블로그</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={handlePresentModalPress}>
@@ -113,7 +145,11 @@ const Home = ({navigation}) => {
                 />
               </View>
               <View style={styles.buttonsheetBtn_view}>
-                <Btn name={"완료"} ative={ativeBtn} onPress={onSubmitSoloRoom}/>
+                <Btn
+                  name={"완료"}
+                  ative={ativeBtn}
+                  onPress={() => onSubmitSoloRoom("Chat")}
+                />
               </View>
             </View>
           </BottomSheetModal>
