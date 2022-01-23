@@ -1,5 +1,6 @@
 import dataManager from "./dataManager";
 import axios from "axios";
+import * as mime from "mime";
 
 const SERVER_MAIN = "https://api.concent.kro.kr:7001";
 let TOKEN; //accessToken ,refreshToken, tokenType
@@ -57,82 +58,65 @@ export default class serverManager {
       this.saveChatsForImage(Images, resObj.messageIds, resObj.chatLogId);
     }
   };
+
   static saveChatsForImage = async (Images, messageIds, saveChatId) => {
     const body = new FormData();
-    //const formData = new FormData();
-    //formData.append("images", Images);
-    //formData.append("messageIds", messageIds);
+    console.log("form데이터");
     Images.map((img, index) => {
-      var photo = {
+      var file = {
         uri: img.uri,
-        type: img.type,
+        type: mime.getType(img.uri),
         name: img.name,
       };
-      body.append("images", photo);
+      body.append("images", file);
     });
     messageIds.map((value, index) => {
       body.append("messageIds", value);
     });
 
-    console.log("사진보내기 프로세스 시작");
-    console.log("데이터검증");
-    console.log(Images);
-    console.log(messageIds);
-    console.log(saveChatId);
-    console.log(body);
-
-    //console.log(formData);
+    // console.log("사진보내기 프로세스 시작");
+    // console.log("데이터검증");
+    // console.log(Images);
+    // console.log(messageIds);
+    // console.log(saveChatId);
+    // console.log(body);
     if (TOKEN === undefined);
     {
       TOKEN = await getToken();
     }
-    axios.defaults.headers.common[
-      "Authorization"
-    ] = `Bearer ${TOKEN.accessToken}`; // 중요
-    axios
-      .post(`${SERVER_MAIN}/save/image/${saveChatId}`, body, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-      .then((response) => {
-        console.log("사진보내기 응답");
-        console.log(response.data);
+    //let header = { headers: { 'Accept': '*', 'Authorization': 'Bearer '+token, 'Content-Type': 'multipart/form-data' } };
+    // axios.defaults.headers.common[
+    //   "Authorization"
+    // ] = `Bearer ${TOKEN.accessToken}`; // 중요
+    // axios
+    //   .post(`${SERVER_MAIN}/save/image/${saveChatId}`, body, {
+    //     headers: {
+    //       "Content-Type": `multipart/form-data`,
+    //     },
+    //   })
+    //   .then((response) => {
+    //     console.log("사진보내기 응답");
+    //     console.log(response.data);
+    //   })
+    //   .catch((err) => {
+    //     console.log("사진보내기 에러");
+    //     console.log(err.response);
+    //   });
+    fetch(`${SERVER_MAIN}/save/image/${saveChatId}`, {
+      method: "POST",
+      body: body,
+      headers: {
+        Authorization: `Bearer ${TOKEN.accessToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    })
+      .then((res) => {
+        console.log("성공이랄까");
+        console.log(res);
       })
       .catch((err) => {
-        console.log("사진보내기 에러");
-        console.log(err);
+        console.log(" 에러랄까");
+        console.log(err.response);
       });
   };
-
-  // static saveChats2 = async (chats) => {
-  //   const res = await fetch(`${SERVER_MAIN}/save`, {
-  //     method: "POST",
-  //     headers: {
-  //       Accept: "application/json",
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${TOKEN.accessToken}`,
-  //     },
-  //     body: {
-  //       chatLogMessageRequests: [
-  //         {
-  //           message: "테스트",
-  //           messageType: "MESSAGE",
-  //           writeAt: "2022-01-18 18:42:00",
-  //         },
-  //       ],
-  //       content: "하이",
-  //       contentBackgroundType: "FULL_SCREEN",
-  //       title: "제목입니다",
-  //     },
-  //   })
-  //     .then((response) => response.json())
-  //     .then((json) => {
-  //       return json;
-  //     })
-  //     .catch((error) => {
-  //       console.error(error);
-  //     });
-  //   console.log(res);
-  // };
 }

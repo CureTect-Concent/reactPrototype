@@ -151,6 +151,8 @@ const Chat = ({ route, navigation }) => {
     console.log(result);
 
     if (!result.cancelled) {
+      console.log("이미지파일좀 보러 드가자~");
+      console.log(result);
       setImage(result);
     }
   };
@@ -190,8 +192,8 @@ const Chat = ({ route, navigation }) => {
         // });
         //Images.push(chats[key].image);
         const file = {
-          name: `${key}.jpg`,
-          type: "image/jpeg",
+          name: chats[key].image.uri.split("/").pop(),
+          type: chats[key].image.type,
           uri: chats[key].image.uri,
         };
         Images.push(file);

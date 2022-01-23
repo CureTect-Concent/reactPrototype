@@ -63,7 +63,6 @@ const Home = ({ navigation }) => {
     setAtiveBtn(true);
   }, [text]);
   const onSubmitSoloRoom = (roomName) => {
-    console.log("클릭" + roomName);
     if (text === "") {
       if (roomName === "Clogs") {
         navigation.navigate(roomName);
