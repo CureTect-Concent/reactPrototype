@@ -43,16 +43,28 @@ const ClogEditView = ({ route, navigation }) => {
   const [categoryText, setCategoryText] = useState("");
   const [absenceText, setAbsenceText] = useState("");
   const [selectObj, setSelectObj] = useState();
+  const [editText, setEditText] = useState("");
 
   const textRef = React.useRef("");
+  const editText = false;
 
   useEffect(() => {
-    setChatsObj(chatsObjTemp);
     setTitleText(chatsObjTemp.contentResponse.title);
-    console.log(chatsObjTemp);
+    addChatsObj(chatsObjTemp);
+    // console.log(chatsObjTemp);
     setIsReady(true);
   }, []);
 
+  const addChatsObj = (objs) => {
+    objs.contentMessageResponses.map((obj, index) => {
+      //편집하기위한 객체 재구성
+      obj = { ...obj, editText };
+      objs.contentMessageResponses[index] = obj;
+      // console.log("객체 편집");
+      // console.log(obj);
+    });
+    setChatsObj(objs);
+  };
   const backBtn = async () => {
     navigation.pop();
   };
@@ -64,6 +76,11 @@ const ClogEditView = ({ route, navigation }) => {
   const onChangeAbsence = (str) => setAbsenceText(str);
   const onSelectChatObj = (key) => {
     setSelectObj(key);
+  };
+  const onEditChatObj = () => {
+    const newChatsObj = { ...chatsObj };
+    newChatsObj.contentMessageResponses[selectObj].editText = true;
+    setChatsObj(newChatsObj);
   };
 
   console.log("렌덜");
@@ -139,7 +156,15 @@ const ClogEditView = ({ route, navigation }) => {
                     >
                       <MenuTrigger>
                         <View style={styles.ChatMsgBox}>
-                          <Text style={styles.ChatMsg}>{Objarr.message}</Text>
+                          {Objarr.editText ? (
+                            <TextInput
+                              style={styles.ChatMsg}
+                              autoFocus={true}
+                              placeholder={"편집하기"}
+                            />
+                          ) : (
+                            <Text style={styles.ChatMsg}>{Objarr.message}</Text>
+                          )}
                           {index === selectObj ? (
                             <View style={{ ...styles.SelectView }}></View>
                           ) : null}
@@ -171,7 +196,7 @@ const ClogEditView = ({ route, navigation }) => {
                             color="black"
                           />
                         </MenuOption>
-                        <MenuOption onSelect={() => {}}>
+                        <MenuOption onSelect={onEditChatObj}>
                           <Entypo name="edit" size={24} color="#242424" />
                         </MenuOption>
                       </MenuOptions>
