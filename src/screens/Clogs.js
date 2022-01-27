@@ -1,5 +1,6 @@
 import { StatusBar } from "expo-status-bar";
 import { darkTheme } from "../theme";
+import clogImage from "../img/600.jpg";
 import profilePic from "../img/profilePic.jpg";
 import React, {
   useCallback,
@@ -22,8 +23,40 @@ import {
 import phonSize from "../component/sizeOfPhon";
 import Text from "../component/defaultText";
 import { Entypo, MaterialIcons, AntDesign } from "@expo/vector-icons";
+import serverManager from "../serverManager";
 const Clogs = ({ navigation }) => {
+  const [noServer, setNoServer] = useState();
   const [CSCState, setCSCState] = useState(0);
+  const [saveClogs, setSaveClogs] = useState([]);
+
+  useEffect(() => {
+    // const modelArr = [modelObj, modelObj, modelObj, modelObj]; //서버완료되기전에 테스트버전
+    // setSaveClogs(modelArr);
+    getsetSaveClogs();
+
+    //console.log(saveClogs[0]);
+    //serverManager.getChat();
+  }, []);
+  const modelObj = {
+    category: [],
+    content: "프로토타입",
+    saveChatId: "28b1ee46-bc0e-4db3-a86a-6e0ad0c873f0",
+    saveChatImage: [],
+    title: "오오",
+    topMessages: ["수", "ㅊㄹ"],
+    writeAt: "2022-01-19",
+  };
+  const getsetSaveClogs = async () => {
+    try {
+      const value = await serverManager.getChatRooms();
+      console.log(value);
+      setSaveClogs(value);
+    } catch (e) {
+      console.log(e);
+    }
+
+    // console.log(value);
+  };
 
   const onNextView = (roomName, keyValue = "") => {
     if (roomName === "ClogScrollView") {
@@ -185,38 +218,87 @@ const Clogs = ({ navigation }) => {
                     </TouchableOpacity>
                   );
                 case 1:
-                  return (
-                    <TouchableOpacity
-                      key="key값넣기"
-                      onPress={() => onNextView("ClogScrollView")}
-                    >
-                      <View style={styles.ClogBlock}>
-                        <View style={styles.TextViewOfClog}>
-                          <Text style={styles.TextViewOfClog_Title}>
-                            편집되기 전인 캐스퍼 2000만원주고 살만한가?
-                          </Text>
-                          <Text style={styles.TextViewOfClog_In_Text}>
-                            캐스퍼 타고 다닌지 얼마됐어?
-                          </Text>
-                          <Text style={styles.TextViewOfClog_In_Text}>
-                            이제 한달된 거 같은데?ㅋㅋ
-                          </Text>
-                          <View style={styles.nameAndDate}>
-                            <Text style={styles.TextViewOfClog_name}>
-                              {true ? "이름" : ""}
+                  return saveClogs.map((value, index) => {
+                    return (
+                      <TouchableOpacity
+                        key={value.saveChatId}
+                        onPress={() =>
+                          onNextView("ClogScrollView", value.saveChatId)
+                        }
+                      >
+                        <View key={value.saveChatId} style={styles.ClogBlock}>
+                          <View style={styles.TextViewOfClog}>
+                            <Text style={styles.TextViewOfClog_Title}>
+                              {value.title}
                             </Text>
-                            <Text style={styles.TextViewOfClog_date}>
-                              2022.04.22
+                            <Text style={styles.TextViewOfClog_In_Text}>
+                              {value.topMessages[1]}
                             </Text>
+                            <Text style={styles.TextViewOfClog_In_Text}>
+                              {value.topMessages[0]}
+                            </Text>
+                            <View style={styles.nameAndDate}>
+                              <Text style={styles.TextViewOfClog_name}>
+                                {false ? "굿맨" : ""}
+                              </Text>
+                              <Text style={styles.TextViewOfClog_date}>
+                                {value.writeAt.replace(/-/gi, ".")}
+                              </Text>
+                            </View>
+                          </View>
+                          <View style={styles.ImageViewOfClog}>
+                            <Image
+                              source={
+                                value.saveChatImage &&
+                                value.saveChatImage.length
+                                  ? {
+                                      uri: serverManager.getImageUri(
+                                        value.saveChatImage[0]
+                                      ),
+                                    }
+                                  : clogImage
+                              }
+                              style={styles.ImageViewOfClog_Image}
+                              resizeMode="cover"
+                            />
                           </View>
                         </View>
-                        <View style={styles.ImageViewOfClog}>
-                          <Text>🖼</Text>
-                        </View>
-                      </View>
-                      <View height={1} backgroundColor="#f4f4f4"></View>
-                    </TouchableOpacity>
-                  );
+                        <View height={1} backgroundColor="#f4f4f4"></View>
+                      </TouchableOpacity>
+                    );
+                  });
+                  // return (
+                  //   <TouchableOpacity
+                  //     key="key값넣기"
+                  //     onPress={() => onNextView("ClogScrollView")}
+                  //   >
+                  //     <View style={styles.ClogBlock}>
+                  //       <View style={styles.TextViewOfClog}>
+                  //         <Text style={styles.TextViewOfClog_Title}>
+                  //           편집되기 전인 캐스퍼 2000만원주고 살만한가?
+                  //         </Text>
+                  //         <Text style={styles.TextViewOfClog_In_Text}>
+                  //           캐스퍼 타고 다닌지 얼마됐어?
+                  //         </Text>
+                  //         <Text style={styles.TextViewOfClog_In_Text}>
+                  //           이제 한달된 거 같은데?ㅋㅋ
+                  //         </Text>
+                  //         <View style={styles.nameAndDate}>
+                  //           <Text style={styles.TextViewOfClog_name}>
+                  //             {true ? "이름" : ""}
+                  //           </Text>
+                  //           <Text style={styles.TextViewOfClog_date}>
+                  //             2022.04.22
+                  //           </Text>
+                  //         </View>
+                  //       </View>
+                  //       <View style={styles.ImageViewOfClog}>
+                  //         <Text>🖼</Text>
+                  //       </View>
+                  //     </View>
+                  //     <View height={1} backgroundColor="#f4f4f4"></View>
+                  //   </TouchableOpacity>
+                  // );
                   break;
                 case 2:
                   return (
@@ -406,6 +488,10 @@ const styles = StyleSheet.create({
     flex: 2,
     justifyContent: "center",
     alignItems: "center",
+  },
+  ImageViewOfClog_Image: {
+    width: phonSize.getInstance().chartWidth * 0.2186,
+    height: phonSize.getInstance().chartWidth * 0.2186,
   },
   nameAndDate: {
     flexDirection: "row",

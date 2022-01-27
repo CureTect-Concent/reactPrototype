@@ -119,4 +119,57 @@ export default class serverManager {
         console.log(err.response);
       });
   };
+
+  static getChatRooms = async (index = 0) => {
+    if (TOKEN === undefined);
+    {
+      TOKEN = await getToken();
+    }
+    axios.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${TOKEN.accessToken}`; // 중요
+    const resObj = await axios
+      .get(`${SERVER_MAIN}/save/all/${index}`)
+      .then((response) => {
+        console.log("응답");
+        // console.log(response);
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    // resObj.map((Textvar, index) => {
+    //   console.log(`-------------${index}번째--------------`);
+    //   console.log(Textvar);
+    //   console.log(`---------------------------------------`);
+    // });
+    return await resObj;
+  };
+
+  static getChats = async (chatRoomId, index = 0) => {
+    // console.log("룸아이디 검증");
+    // console.log(chatRoomId);
+    if (TOKEN === undefined);
+    {
+      TOKEN = await getToken();
+    }
+    axios.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${TOKEN.accessToken}`; // 중요
+    const params = { contentId: chatRoomId };
+    return await axios
+      .get(`${SERVER_MAIN}/editor/message/${index}`, { params })
+      .then((response) => {
+        console.log("응답");
+        //  console.log(response);
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
+  static getImageUri = (imageUri) => {
+    return `https://cocent-bucket.s3.ap-northeast-2.amazonaws.com/${imageUri}`;
+  };
 }

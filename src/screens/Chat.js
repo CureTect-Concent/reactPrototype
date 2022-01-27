@@ -6,6 +6,7 @@ import React, {
   useState,
 } from "react";
 import {
+  Alert,
   View,
   Text,
   StyleSheet,
@@ -97,7 +98,9 @@ const Chat = ({ route, navigation }) => {
   function timestamp() {
     var today = new Date();
     today.setHours(today.getHours() + 9);
-    return today.toISOString().replace("T", " ").substring(0, 19);
+    const timeValue = today.toISOString().replace("T", " ").replace("Z", "");
+    console.log(timeValue);
+    return timeValue;
   }
 
   const getTime = (data) => {
@@ -142,13 +145,19 @@ const Chat = ({ route, navigation }) => {
   }, []);
   //console.log(time);
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      //allowsEditing: true,
       quality: 1,
     });
     console.log(result);
+    // Alert.alert("이미지를 보내시겠습니까?", "ㅋㅋ", [
+    //   {
+    //     text: "취소",
+    //     onPress: () => Alert.alert("Cancel Pressed"),
+    //     style: "cancel",
+    //   },
+    // ]);
 
     if (!result.cancelled) {
       console.log("이미지파일좀 보러 드가자~");
@@ -201,7 +210,7 @@ const Chat = ({ route, navigation }) => {
     });
     console.log(Images);
     serverManager.saveChats(saveChatData, Images);
-    // navigation.pop();
+    navigation.pop();
     // console.log(saveChatData);
   };
 

@@ -6,6 +6,7 @@ import Home from "./src/screens/Home";
 import Chat from "./src/screens/Chat";
 import Clogs from "./src/screens/Clogs";
 import ClogScrollView from "./src/screens/ClogScrollView";
+import ClogEditView from "./src/screens/ClogEditView";
 import * as Font from "expo-font";
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +46,11 @@ function App() {
           options={{ headerShown: false }}
           name="ClogScrollView"
           component={ClogScrollView}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="ClogEditView"
+          component={ClogEditView}
         />
       </Stack.Navigator>
     </NavigationContainer>
