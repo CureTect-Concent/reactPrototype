@@ -34,7 +34,6 @@ const Clogs = ({ navigation }) => {
     // setSaveClogs(modelArr);
     getsetSaveClogs();
 
-    //console.log(saveClogs[0]);
     //serverManager.getChat();
   }, []);
   const modelObj = {
@@ -49,7 +48,7 @@ const Clogs = ({ navigation }) => {
   const getsetSaveClogs = async () => {
     try {
       const value = await serverManager.getChatRooms();
-      console.log(value);
+      //console.log(value);
       setSaveClogs(value);
     } catch (e) {
       console.log(e);
@@ -262,6 +261,13 @@ const Clogs = ({ navigation }) => {
                               resizeMode="cover"
                             />
                           </View>
+                          <TouchableOpacity
+                            onPress={() => {
+                              serverManager.deleteContent(value.saveChatId);
+                            }}
+                          >
+                            <Text>❌</Text>
+                          </TouchableOpacity>
                         </View>
                         <View height={1} backgroundColor="#f4f4f4"></View>
                       </TouchableOpacity>

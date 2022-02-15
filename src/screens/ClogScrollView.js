@@ -26,10 +26,13 @@ import { Entypo, MaterialIcons, AntDesign } from "@expo/vector-icons";
 import serverManager from "../serverManager";
 import AutoImage from "react-native-scalable-image";
 import { asin } from "react-native-reanimated";
-//const str = `ㅇ\nㅇ\nㅇ\nㅇ\nㅇ\nㅇ`;
+//const str = `ㅇ\nㅇ\nㅇ\nㅇ\nㅇ\nㅇ`;\
+
+const POS_CENTER = "BOTTOM_CENTER";
+const POS_RIGHT = "BOTTOM_RIGHT";
 
 const ClogScrollView = ({ route, navigation }) => {
-  const { keyValue } = route.params;
+  const { keyValue, saveChatId } = route.params;
   const [isReady, setIsReady] = useState(false);
   const [chatsObj, setChatsObj] = useState({});
   // const [imgObjs, setImgObj] = useState({});
@@ -43,7 +46,7 @@ const ClogScrollView = ({ route, navigation }) => {
   // console.log(keyValue);
   useEffect(async () => {
     setChatsObj(await serverManager.getChats(keyValue));
-    //console.log(chatsObj);
+    console.log(chatsObj);
     setIsReady(true);
   }, [isReady]);
 
@@ -147,7 +150,8 @@ const ClogScrollView = ({ route, navigation }) => {
               // console.log(serverManager.getImageUri(Objarr.messageImageName));
               // getImageObj(serverManager.getImageUri(Objarr.messageImageName));
 
-              return Objarr.messageImageName === null ? (
+              return Objarr.messageImageName === null &&
+                (Objarr.addImageName === "" || !Objarr.addImageName) ? (
                 <View key={index} style={styles.chatBlock}>
                   <Text>
                     {
@@ -162,11 +166,20 @@ const ClogScrollView = ({ route, navigation }) => {
                 <View key={index} style={styles.chatBlock}>
                   <AutoImage
                     source={{
-                      uri: serverManager.getImageUri(Objarr.messageImageName),
+                      uri:
+                        Objarr.addImageName === ""
+                          ? serverManager.getImageUri(Objarr.messageImageName)
+                          : serverManager.getImageUri(Objarr.addImageName),
                     }}
-                    width={phonSize.getInstance().chartWidth * 0.69}
+                    width={
+                      Objarr.isResizing
+                        ? phonSize.getInstance().chartWidth * Objarr.width
+                        : phonSize.getInstance().chartWidth * 0.69
+                    }
                     style={{
                       ...styles.ChatMsg_image,
+                      borderTopRightRadius:
+                        Objarr.position === POS_CENTER ? 10 : 0,
                     }}
                     resizeMode="cover"
                   />

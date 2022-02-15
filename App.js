@@ -8,6 +8,7 @@ import Clogs from "./src/screens/Clogs";
 import ClogScrollView from "./src/screens/ClogScrollView";
 import ClogEditView from "./src/screens/ClogEditView";
 import * as Font from "expo-font";
+import "react-native-url-polyfill/auto";
 
 const Stack = createNativeStackNavigator();
 

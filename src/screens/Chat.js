@@ -253,11 +253,13 @@ const Chat = ({ route, navigation }) => {
                       ...styles.ChatMsg_image,
                       width:
                         chats[key].image.width > chartWidth * 0.69
-                          ? "69%"
+                          ? chartWidth * 0.69
                           : chats[key].image.width,
                       height:
-                        (chartWidth * 0.69 * chats[key].image.height) /
-                        chats[key].image.width,
+                        chats[key].image.width > chartWidth * 0.69
+                          ? (chartWidth * 0.69 * chats[key].image.height) /
+                            chats[key].image.width
+                          : chats[key].image.height,
                     }}
                     resizeMode="cover"
                   />

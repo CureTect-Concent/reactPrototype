@@ -14,10 +14,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from "react-native";
-import {
-  GestureHandlerRootView,
-  TextInput,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, {
   BottomSheetModal,
   BottomSheetModalProvider,
