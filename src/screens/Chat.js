@@ -31,6 +31,7 @@ import dataManager from "../dataManager";
 import serverManager from "../serverManager";
 import * as ImagePicker from "expo-image-picker";
 import { dispatchCommand } from "react-native/Libraries/Renderer/implementations/ReactNativeRenderer-dev";
+import CustomSvgIcon from "../component/icons";
 
 const StatusBarHeight =
   Platform.OS === "ios" ? getStatusBarHeight(true) : StatusBar.currentHeight;
@@ -223,10 +224,10 @@ const Chat = ({ route, navigation }) => {
             <Text style={styles.titleTxt}>{title}</Text>
           </View>
           <TouchableOpacity onPress={rebulidData} style={styles.titleTwo}>
-            <AntDesign name="logout" size={24} color="white" />
+            <CustomSvgIcon name={"Out"} color={"white"} />
           </TouchableOpacity>
           <TouchableOpacity style={styles.titleThree}>
-            <AntDesign name="menu-fold" size={24} color="white" />
+            <CustomSvgIcon name={"Hamburger"} color={"white"} />
           </TouchableOpacity>
         </View>
       </View>
@@ -253,11 +254,13 @@ const Chat = ({ route, navigation }) => {
                       ...styles.ChatMsg_image,
                       width:
                         chats[key].image.width > chartWidth * 0.69
-                          ? "69%"
+                          ? chartWidth * 0.69
                           : chats[key].image.width,
                       height:
-                        (chartWidth * 0.69 * chats[key].image.height) /
-                        chats[key].image.width,
+                        chats[key].image.width > chartWidth * 0.69
+                          ? (chartWidth * 0.69 * chats[key].image.height) /
+                            chats[key].image.width
+                          : chats[key].image.height,
                     }}
                     resizeMode="cover"
                   />

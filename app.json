@@ -10,6 +10,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "packagerOpts": { 
+      "config": "metro.config.js", 
+      "sourceExts": ["js", "jsx", "svg"] 
+      } ,
     "updates": {
       "fallbackToCacheTimeout": 0
     },
@@ -24,7 +28,9 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "softwareKeyboardLayoutMode":"pan"
+      "softwareKeyboardLayoutMode":"pan",
+      "package": "com.concent.reactPrototype",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/favicon.png"
