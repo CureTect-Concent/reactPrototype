@@ -299,7 +299,7 @@ export default class serverManager {
       });
   };
 
-  static editorEditChatInFO = async (Images, contentId) => {
+  static editorEditChatInFO = async (Images, contentId, titleV, dectV) => {
     console.log("editorEditCHatInFO테스트");
     console.log(`데이터검증 배경사진: ${JSON.stringify(Images)}`);
     console.log(`데이터검증 아이디: ${contentId}`);
@@ -321,12 +321,12 @@ export default class serverManager {
       body.append("backgroundImage", file);
       body.append("images", file);
     });
-    body.append("title", "날아오를거야~");
+    body.append("title", titleV);
     body.append("categories", 702);
-    body.append("dect", "더이상 프로토타입이 아닌 이느낌");
-    console.log("----------------form데이터 검증---------");
+    body.append("dect", dectV);
+    console.log("---------------editorEditCHatInFO form데이터 검증---------");
     console.log(body);
-    console.log("----------------form데이터 검증---------");
+    console.log("----------------editorEditCHatInFO form데이터 검증---------");
 
     if (TOKEN === undefined);
     {
@@ -342,9 +342,7 @@ export default class serverManager {
     })
       .then((response) => {
         console.log("성공이랄까");
-        response.json().then((json) => {
-          console.log(json);
-        });
+        console.log(JSON.parse(JSON.stringify(response)));
       })
       .catch((response) => {
         console.log(" 에러랄까");
@@ -366,7 +364,7 @@ export default class serverManager {
     //     console.log(err);
     //   });
   };
-  static usedEditorEditChatInFO = async (Images, contentId) => {
+  static usedEditorEditChatInFO = async (Images, contentId, title, dect) => {
     console.log("editorEditCHatInFO테스트");
     console.log(`데이터검증 배경사진: ${JSON.stringify(Images)}`);
     console.log(`데이터검증 아이디: ${contentId}`);
@@ -382,9 +380,9 @@ export default class serverManager {
       body.append("backgroundImage", file);
       body.append("images", file);
     });
-    body.append("title", "몰?루");
+    body.append("title", title);
     body.append("categories", 702);
-    body.append("dect", "더이상 프로토타입이 아닌 이느낌");
+    body.append("dect", dect);
     console.log("----------------form데이터 검증---------");
     console.log(body);
     console.log("----------------form데이터 검증---------");
@@ -601,46 +599,53 @@ export default class serverManager {
       });
   };
 
-  static editorAll = async (contentId, Images, BgImages) => {
+  static editorAll = async (contentId, chatObj, Images, BgImages) => {
+    console.log(`editorAll`);
     console.log(`데이터검증 배경사진: ${JSON.stringify(Images)}`);
-    console.log(`데이터검증 아이디: ${contentId}`);
+    //console.log(`데이터검증 아이디: ${contentId}`);
     const body = new FormData();
-    console.log("form데이터");
+    // console.log("form데이터");
+    //console.log(serverManager.getImageUri(Images[0]));
+    if (Images.length !== 0) {
+      Images.map((img, index) => {
+        var file = {
+          uri: img.uri,
+          type: mime.getType(img.uri),
+          name: img.uri.split("/").pop(),
+        };
+        body.append("messageImages", file);
+      });
+    } else {
+      // body.append("messageImages", "");
+    }
+    if (BgImages.length !== 0) {
+      BgImages.map((img, index) => {
+        var file = {
+          uri: img.uri,
+          type: mime.getType(img.uri),
+          name: img.uri.split("/").pop(),
+        };
+        body.append("backgroundImages", file);
+      });
+    } else {
+      // body.append("backgroundImages", "");
+    }
 
-    Images.map((img, index) => {
-      var file = {
-        uri: img.uri,
-        type: mime.getType(img.uri),
-        name: img.uri.split("/").pop(),
-      };
-      body.append("messageImages", file);
-      body.append("backgroundImages", file);
-    });
-    let ChatMessageJson = { editAllRequest: [] };
-    ChatMessageJson.editAllRequest.push({
-      backgroundType: false,
-      transformScreen: false,
-      position: "BOTTOM_RIGHT",
-      messageType: "MESSAGE",
-      message: "구질구짎비가 오는 이런날엔...",
-      messageColor: "#ffffff",
-      textColor: "#000000",
-      alpha: "1.0",
-      isResizing: false,
-      width: "0.0",
-      height: "0.0",
-    });
+    let ChatMessageJson = { ...chatObj };
+    console.log("-------------- editorAll json------------");
+    console.log(ChatMessageJson);
+    console.log("--------------editorAll json------------");
 
     body.append("jsonData", JSON.stringify(ChatMessageJson));
-    console.log("----------------form데이터 검증---------");
-    console.log(body);
-    console.log("----------------form데이터 검증---------");
+    //console.log("----------------form데이터 검증---------");
+    // console.log(body);
+    // console.log("----------------form데이터 검증---------");
 
     if (TOKEN === undefined);
     {
       TOKEN = await getToken();
     }
-    fetch(`${SERVER_MAIN}/editor/all/${contentId}`, {
+    const isDone = fetch(`${SERVER_MAIN}/editor/all/${contentId}`, {
       method: "PUT",
       body: body,
       headers: {
@@ -652,12 +657,15 @@ export default class serverManager {
       .then((response) => {
         console.log("성공이랄까");
         console.log(JSON.parse(JSON.stringify(response)));
+        return true;
       })
       .catch((e) => {
         console.log(" 에러랄까");
         console.log(JSON.parse(JSON.stringify(e)));
         // console.log(e.response);
       });
+
+    return isDone;
   };
 
   static editorDeleteMsg = async (contentId) => {
@@ -718,6 +726,54 @@ export default class serverManager {
         console.log(" 에러랄까");
         console.log(JSON.parse(JSON.stringify(e)));
         // console.log(e.response);
+      });
+  };
+
+  static contentOpen = async (contentId) => {
+    console.log(`데이터검증 아이디: ${contentId}`);
+
+    if (TOKEN === undefined);
+    {
+      TOKEN = await getToken();
+    }
+    fetch(`${SERVER_MAIN}/content/open/${contentId}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${TOKEN.accessToken}`,
+        "Content-Type": "application/json",
+        //"Content-Type": "multipart/form-data",
+      },
+    })
+      .then((response) => {
+        console.log("성공이랄까");
+        console.log(JSON.parse(JSON.stringify(response)));
+      })
+      .catch((e) => {
+        console.log(" 에러랄까");
+        console.log(JSON.parse(JSON.stringify(e)));
+        // console.log(e.response);
+      });
+  };
+
+  static getContentMe = async (index = 0) => {
+    // console.log("룸아이디 검증");
+    // console.log(chatRoomId);
+    if (TOKEN === undefined);
+    {
+      TOKEN = await getToken();
+    }
+    axios.defaults.headers.common[
+      "Authorization"
+    ] = `Bearer ${TOKEN.accessToken}`; // 중요
+    return await axios
+      .get(`${SERVER_MAIN}/content/me/${index}`)
+      .then((response) => {
+        console.log("응답");
+        //  console.log(response);
+        return response.data;
+      })
+      .catch((err) => {
+        console.log(err);
       });
   };
 }

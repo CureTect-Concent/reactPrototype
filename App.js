@@ -7,6 +7,7 @@ import Chat from "./src/screens/Chat";
 import Clogs from "./src/screens/Clogs";
 import ClogScrollView from "./src/screens/ClogScrollView";
 import ClogEditView from "./src/screens/ClogEditView";
+import ChatLogView from "./src/screens/ChatLogView";
 import * as Font from "expo-font";
 import "react-native-url-polyfill/auto";
 
@@ -52,6 +53,11 @@ function App() {
           options={{ headerShown: false }}
           name="ClogEditView"
           component={ClogEditView}
+        />
+        <Stack.Screen
+          options={{ headerShown: false }}
+          name="ChatLogView"
+          component={ChatLogView}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -32,6 +32,9 @@ const POS_CENTER = "BOTTOM_CENTER";
 const POS_RIGHT = "BOTTOM_RIGHT";
 
 const ClogScrollView = ({ route, navigation }) => {
+  console.log("------------------------------------------------route");
+  console.log(route);
+  console.log("route==================================================");
   const { keyValue, saveChatId } = route.params;
   const [isReady, setIsReady] = useState(false);
   const [chatsObj, setChatsObj] = useState({});
@@ -45,6 +48,8 @@ const ClogScrollView = ({ route, navigation }) => {
   // console.log("방에 들어왔당꼐요");
   // console.log(keyValue);
   useEffect(async () => {
+    console.log("테스트");
+    console.log(keyValue);
     setChatsObj(await serverManager.getChats(keyValue));
     console.log(chatsObj);
     setIsReady(true);
@@ -79,6 +84,7 @@ const ClogScrollView = ({ route, navigation }) => {
   const GoToEdit = async () => {
     navigation.navigate("ClogEditView", {
       chatsObjTemp: chatsObj,
+      callBack: route.params.callBack,
     });
   };
   const getSize = async () => {
@@ -248,7 +254,12 @@ const ClogScrollView = ({ route, navigation }) => {
               >
                 <Entypo name="edit" size={24} color="white" />
               </TouchableOpacity>
-              <TouchableOpacity style={styles.titleThree_icon}>
+              <TouchableOpacity
+                onPress={() => {
+                  serverManager.deleteContent(keyValue);
+                }}
+                style={styles.titleThree_icon}
+              >
                 <MaterialIcons name="delete-outline" size={24} color="white" />
               </TouchableOpacity>
             </View>

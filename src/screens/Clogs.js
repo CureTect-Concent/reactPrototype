@@ -25,17 +25,24 @@ import Text from "../component/defaultText";
 import { Entypo, MaterialIcons, AntDesign } from "@expo/vector-icons";
 import serverManager from "../serverManager";
 const Clogs = ({ navigation }) => {
+  console.log("CLOGS 페이지");
   const [noServer, setNoServer] = useState();
+  const [loading, setLoading] = useState(false);
   const [CSCState, setCSCState] = useState(0);
   const [saveClogs, setSaveClogs] = useState([]);
+  const [fisidhedClogs, setFisidhedClogs] = useState([]);
 
-  useEffect(() => {
+  useEffect(async () => {
     // const modelArr = [modelObj, modelObj, modelObj, modelObj]; //서버완료되기전에 테스트버전
-    // setSaveClogs(modelArr);
-    getsetSaveClogs();
+    // setSaveClogs(modelArr);\
+
+    if (loading === false) {
+      setSaveClogs([]);
+      setLoading(await getsetSaveClogs());
+    }
 
     //serverManager.getChat();
-  }, []);
+  }, [loading]);
   const modelObj = {
     category: [],
     content: "프로토타입",
@@ -45,13 +52,21 @@ const Clogs = ({ navigation }) => {
     topMessages: ["수", "ㅊㄹ"],
     writeAt: "2022-01-19",
   };
+  const isLoadingDone = () => {
+    setLoading(false);
+  };
   const getsetSaveClogs = async () => {
     try {
       const value = await serverManager.getChatRooms();
-      //console.log(value);
+      const value2 = await serverManager.getContentMe();
+      value2.contentResponses.map((value) => {
+        console.log(value);
+      });
       setSaveClogs(value);
+      setFisidhedClogs(value2.contentResponses);
+      return true;
     } catch (e) {
-      console.log(e);
+      // console.log(e);
     }
 
     // console.log(value);
@@ -61,12 +76,15 @@ const Clogs = ({ navigation }) => {
     if (roomName === "ClogScrollView") {
       navigation.navigate(roomName, {
         keyValue: keyValue,
+        callBack: isLoadingDone,
       });
     } else {
-      navigation.navigate(roomName);
+      navigation.navigate(roomName, {
+        keyValue: keyValue,
+      });
     }
   };
-  return (
+  return loading ? (
     <View style={styles.container}>
       <View style={styles.topandmiddleView}>
         <View style={styles.headerStyle}></View>
@@ -187,35 +205,62 @@ const Clogs = ({ navigation }) => {
             {(() => {
               switch (CSCState) {
                 case 0:
-                  return (
-                    <TouchableOpacity onPress={() => {}}>
-                      <View style={styles.ClogBlock}>
-                        <View style={styles.TextViewOfClog}>
-                          <Text style={styles.TextViewOfClog_Title}>
-                            편집된 캐스퍼 2000만원주고 살만한가?
-                          </Text>
-                          <Text style={styles.TextViewOfClog_In_Text}>
-                            캐스퍼 타고 다닌지 얼마됐어?
-                          </Text>
-                          <Text style={styles.TextViewOfClog_In_Text}>
-                            이제 한달된 거 같은데?ㅋㅋ
-                          </Text>
-                          <View style={styles.nameAndDate}>
-                            <Text style={styles.TextViewOfClog_name}>
-                              {true ? "이름" : ""}
+                  return fisidhedClogs.map((value) => {
+                    return (
+                      <TouchableOpacity
+                        onPress={() =>
+                          onNextView("ChatLogView", value.contentId)
+                        }
+                      >
+                        <View style={styles.ClogBlock}>
+                          <View style={styles.TextViewOfClog}>
+                            <Text style={styles.TextViewOfClog_Title}>
+                              {value.title}
                             </Text>
-                            <Text style={styles.TextViewOfClog_date}>
-                              2022.04.22
+                            <Text style={styles.TextViewOfClog_In_Text}>
+                              {value.talks[0]}
                             </Text>
+                            <Text style={styles.TextViewOfClog_In_Text}>
+                              {value.talks[1]}
+                            </Text>
+                            <View style={styles.nameAndDate}>
+                              <Text style={styles.TextViewOfClog_name}>
+                                {true ? "굿맨" : ""}
+                              </Text>
+                              <Text style={styles.TextViewOfClog_date}>
+                                {value.writeAt}
+                              </Text>
+                            </View>
                           </View>
+                          <View style={styles.ImageViewOfClog}>
+                            <Image
+                              source={
+                                value.contentImageName &&
+                                value.contentImageName.length
+                                  ? {
+                                      uri: serverManager.getImageUri(
+                                        value.contentImageName[0]
+                                      ),
+                                    }
+                                  : clogImage
+                              }
+                              resizeMethod="auto"
+                              style={styles.ImageViewOfClog_Image}
+                              resizeMode="cover"
+                            />
+                          </View>
+                          <TouchableOpacity
+                            onPress={() =>
+                              serverManager.contentOpen(value.contentId)
+                            }
+                          >
+                            <Text>✅</Text>
+                          </TouchableOpacity>
                         </View>
-                        <View style={styles.ImageViewOfClog}>
-                          <Text>🖼</Text>
-                        </View>
-                      </View>
-                      <View height={1} backgroundColor="#f4f4f4"></View>
-                    </TouchableOpacity>
-                  );
+                        <View height={1} backgroundColor="#f4f4f4"></View>
+                      </TouchableOpacity>
+                    );
+                  });
                 case 1:
                   return saveClogs.map((value, index) => {
                     return (
@@ -257,17 +302,11 @@ const Clogs = ({ navigation }) => {
                                     }
                                   : clogImage
                               }
+                              resizeMethod="auto"
                               style={styles.ImageViewOfClog_Image}
                               resizeMode="cover"
                             />
                           </View>
-                          <TouchableOpacity
-                            onPress={() => {
-                              serverManager.deleteContent(value.saveChatId);
-                            }}
-                          >
-                            <Text>❌</Text>
-                          </TouchableOpacity>
                         </View>
                         <View height={1} backgroundColor="#f4f4f4"></View>
                       </TouchableOpacity>
@@ -330,9 +369,18 @@ const Clogs = ({ navigation }) => {
         <Text>📝</Text>
       </View>
     </View>
+  ) : (
+    <View style={styles.appLoading}>
+      <Text>Loading</Text>
+    </View>
   );
 };
 const styles = StyleSheet.create({
+  appLoading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   container: {
     flex: 1,
   },

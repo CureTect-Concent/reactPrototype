@@ -55,9 +55,10 @@ import Draggable from "react-native-draggable";
 import { Slider } from "@miblanchard/react-native-slider";
 import * as ImagePicker from "expo-image-picker";
 import { set } from "react-native-reanimated";
+import { StackActions } from "@react-navigation/native";
 //const str = `ㅇ\nㅇ\nㅇ\nㅇ\nㅇ\nㅇ`;
-const POS_CENTER = "BOTTOM_CENTER";
-const POS_RIGHT = "BOTTOM_RIGHT";
+const POS_CENTER = "CENTER";
+const POS_RIGHT = "RIGHT";
 const DEFAULT_VALUE = 0;
 let positionY;
 
@@ -73,6 +74,7 @@ let beForChatObj = {};
 const ClogEditView = ({ route, navigation }) => {
   const { chatsObjTemp } = route.params;
   const [isReady, setIsReady] = useState(false);
+  const [lodingText, setLodingText] = useState("Loding");
   const [chatsObj, setChatsObj] = useState({});
   const [titleText, setTitleText] = useState("");
   const [categoryText, setCategoryText] = useState("");
@@ -99,7 +101,21 @@ const ClogEditView = ({ route, navigation }) => {
   useEffect(() => {
     positionY = 0;
     beForChatObj = { ...chatsObjTemp };
+    // console.log("서버에서 받아오기-------------------");
+    // console.log(chatsObjTemp.contentMessageResponses);
+    // console.log("서버에서 받아오기-------------------");
     setTitleText(chatsObjTemp.contentResponse.title);
+    setAbsenceText(chatsObjTemp.contentResponse.dect);
+    chatsObjTemp.contentMessageResponses.map((valueObj, index) => {
+      chatsObjTemp.contentMessageResponses[index].position =
+        valueObj.backgroundColor === null
+          ? POS_RIGHT
+          : valueObj.backgroundColor;
+    });
+    // console.log("새로고친후 -------------------");
+    // console.log(chatsObjTemp.contentMessageResponses);
+    // console.log("새로고친후-------------------");
+
     addChatsObj(chatsObjTemp);
     // console.log(chatsObjTemp.contentMessageResponses.length);
     setChatObjIndex(chatsObjTemp.contentMessageResponses.length);
@@ -146,6 +162,19 @@ const ClogEditView = ({ route, navigation }) => {
   useEffect(() => {
     if (!!bgImage) addToBackground(bgImage);
   }, [bgImage]);
+
+  useEffect(() => {
+    if (isReady === true && lodingText === "저장중") {
+      setIsReady(false);
+      setTimeout(() => {
+        serverManager.contentOpen(chatsObj.contentResponse.contentId);
+      }, 2000);
+      setTimeout(() => {
+        route.params.callBack();
+        navigation.dispatch(StackActions.pop(2));
+      }, 4000);
+    }
+  }, [isReady]);
   // useEffect(()=>{
   // },[colorPickPos])
   // useEffect(() => {
@@ -180,7 +209,7 @@ const ClogEditView = ({ route, navigation }) => {
     //console.log(titleText);
   };
   const onChangeCategory = (str) => setCategoryText(str);
-  const onChangeAbsence = (str) => setAbsenceText(str);
+  const onChangeAbsence = (str) => setAbsenceText(str.nativeEvent.text);
   const onChangeEditText = (payload) => setEditObjText(payload);
   // const onSelectChatObj = (key) => {
   //   setSelectObj(key);
@@ -222,6 +251,7 @@ const ClogEditView = ({ route, navigation }) => {
       cloneObj.editText = true;
       cloneObj.editText = true;
       cloneObj.message = "";
+      cloneObj.isResizing = false;
       cloneObj.messageImageName = null;
       cloneObj.messageType = "MESSAGE";
     } else {
@@ -229,7 +259,6 @@ const ClogEditView = ({ route, navigation }) => {
       cloneObj.message = "사진을 보냈습니다";
       cloneObj.messageImageName = image;
       cloneObj.messageType = "IMAGE";
-      cloneObj.position = null;
     }
     cloneObj.backgroundImage = "";
     cloneObj.backgroundType = false;
@@ -252,7 +281,6 @@ const ClogEditView = ({ route, navigation }) => {
 
     // console.log("-----------체크------------------------");
     // console.log(editFocus);
-    console.log(newChatsObj.contentMessageResponses[editFocus]);
     // console.log("------------체크-----------------------");
 
     setEditFocus(
@@ -362,7 +390,7 @@ const ClogEditView = ({ route, navigation }) => {
   const deleteScreenChange = (index) => {
     const newChatsObj = { ...chatsObj };
     newChatsObj.contentMessageResponses[editFocus].transformScreen = false;
-    console.log(newChatsObj.contentMessageResponses[editFocus].transformScreen);
+    //console.log(newChatsObj.contentMessageResponses[editFocus].transformScreen);
     setChatsObj(newChatsObj);
 
     // const cloneObj = { ...newChatsObj.contentMessageResponses[index] };
@@ -507,23 +535,14 @@ const ClogEditView = ({ route, navigation }) => {
     };
   };
 
-  // const firePressEvent = (event) => {
-  //   const { onPress } = haha;
-  //   console.log(Object.keys(event.currentTarget.viewConfig));
-  //   console.log(event.currentTarget.viewConfig.uiViewClassName);
-  //   if (onPress) {
-  //     onPress({
-  //       ...computeSatValPress(event),
-  //       nativeEvent: event.nativeEvent,
-  //     });
-  //   }
-  // };
+  //
   const getColorValue = (ColorValue, alphaValue) => {
     const newChatsObj = { ...chatsObj };
     // console.log("들어온값 패까보자");
-    // console.log(ColorValue);
-    // console.log(alphaValue);
-    newChatsObj.contentMessageResponses[editFocus].messageColor = ColorValue;
+    // console.log(ColorValue.includes("#"));
+    // console.log(ColorValue.slice(1));
+    newChatsObj.contentMessageResponses[editFocus].messageColor =
+      ColorValue.slice(1);
     newChatsObj.contentMessageResponses[editFocus].alpha = alphaValue;
     // console.log(newChatsObj);
     //console.log(newChatsObj.contentMessageResponses[editFocus].backgroundColor);
@@ -534,7 +553,7 @@ const ClogEditView = ({ route, navigation }) => {
     let result = ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       //allowsEditing: true,
-      quality: 1,
+      quality: 0.38,
     });
     return result;
   };
@@ -549,14 +568,6 @@ const ClogEditView = ({ route, navigation }) => {
   };
   const addToBgImage = async () => {
     let result = await imagePick();
-    // console.log(result);
-    // Alert.alert("이미지를 보내시겠습니까?", "ㅋㅋ", [
-    //   {
-    //     text: "취소",
-    //     onPress: () => Alert.alert("Cancel Pressed"),
-    //     style: "cancel",
-    //   },
-    // ]);
     if (!result.cancelled) {
       // console.log("배경 이미지파일좀 보러 드가자~");
       // console.log(result);
@@ -1059,68 +1070,89 @@ const ClogEditView = ({ route, navigation }) => {
     }
   );
 
-  const saveChatObjToServer = () => {
-    console.log(beForChatObj.contentMessageResponses);
-    console.log(chatsObj.contentMessageResponses);
-    // {
-    //   "editAllRequest" : [
-    //     {
-    //       backgroundType:bool
+  const saveChatObjToServer = async () => {
+    setIsReady(false);
+    setLodingText("저장중");
+    // console.log(beForChatObj.contentMessageResponses);
+    // console.log(chatsObj.contentMessageResponses);
 
-    //       transformScreen:bool
-
-    //       position:
-
-    //       messageType:"IMAGW" "MESSAGE"
-    //       message
-    //       messageColor
-    //       textColor
-    //       alpha
-
-    //       isResizing:bool
-    //       width
-    //       height
-    //     },
-    //     {
-    //       ...
-    //     }
-    //   ]
-    // }
     let Images = [];
     let BgImages = [];
     let saveTempId = 0;
     let ChatMessageJson = { editAllRequest: [] };
+
     chatsObj.contentMessageResponses.map((valueObj, index) => {
-      if (valueObj.messageType === "IMAGE") {
+      if (
+        valueObj.messageType === "IMAGE" &&
+        valueObj.messageImageName instanceof Object
+      ) {
         Images.push(valueObj.messageImageName);
       }
+      if (valueObj.backgroundType === true) {
+        BgImages.push(valueObj.backgroundImage);
+      }
       ChatMessageJson.editAllRequest.push({
-        backgroundType: false,
-        transformScreen: false,
-        position: "BOTTOM_RIGHT",
-        messageType: "MESSAGE",
-        message: "구질구짎비가 오는 이런날엔...",
-        messageColor: "#ffffff",
-        textColor: "#000000",
-        alpha: "1.0",
-        isResizing: false,
-        width: "0.0",
-        height: "0.0",
+        backgroundImageName:
+          valueObj.backgroundType === true || valueObj.backgroundImage === null
+            ? ""
+            : valueObj.backgroundImage,
+        backgroundType:
+          valueObj.backgroundType === true ||
+          valueObj.backgroundType === "IMAGE"
+            ? true
+            : false,
+        transformScreen: valueObj.transformScreen,
+        position: "BOTTOM_" + valueObj.position,
+        messageType: valueObj.messageType,
+        message: valueObj.message,
+        messageImageName:
+          !valueObj.messageImageName ||
+          valueObj.messageImageName instanceof Object
+            ? ""
+            : valueObj.messageImageName,
+        messageColor:
+          valueObj.messageColor === "" ? "ffffff" : valueObj.messageColor,
+        textColor: valueObj.textColor === "" ? "#000000" : valueObj.textColor,
+        alpha: valueObj.alpha.toString(),
+        isResizing: valueObj.isResizing,
+        width: valueObj.width.toString(),
+        height: valueObj.height.toString(),
       });
     });
-    console.log(Images);
-    console.log(chatsObj.contentResponse.contentId);
-    serverManager.editorAll(
-      chatsObj.contentResponse.contentId,
-      Images
-      // ChatMessageJson
+    console.log(`-------------------------------채팅에서 막 만든 데이터 구조`);
+    console.log(ChatMessageJson);
+    console.log(`-------------------------------채팅에서 막 만든 데이터 구조`);
+    setIsReady(
+      await serverManager.editorAll(
+        chatsObj.contentResponse.contentId,
+        ChatMessageJson,
+        Images,
+        BgImages
+      )
     );
+    if (!!titleBgImage && chatsObj.contentResponse.backgroundImage === null) {
+      //console.log("신규 카테고리 변경");
+      serverManager.editorEditChatInFO(
+        [titleBgImage],
+        chatsObj.contentResponse.contentId,
+        titleText,
+        absenceText
+      );
+    } else if (!!titleBgImage && !!chatsObj.contentResponse.backgroundImage) {
+      //console.log("유즈를 사용한 카테고리 변경");
+      serverManager.usedEditorEditChatInFO(
+        [titleBgImage],
+        chatsObj.contentResponse.contentId,
+        titleText,
+        absenceText
+      );
+    }
   };
 
-  // console.log(value);
+  // console.log("잉");
   // console.log(saturation);
   //console.log(titleText);
-  console.log("렌덜~");
+  //console.log("렌덜~");
   return isReady ? (
     <MenuProvider>
       <GestureHandlerRootView flex={1}>
@@ -1226,6 +1258,17 @@ const ClogEditView = ({ route, navigation }) => {
                           }}
                           resizeMode="cover"
                         />
+                      ) : !!chatsObj.contentResponse.backgroundImage ? (
+                        <AutoImage
+                          source={{
+                            uri: serverManager.getImageUri(
+                              chatsObj.contentResponse.backgroundImage
+                            ),
+                          }}
+                          width={30}
+                          height={30}
+                          resizeMode="cover"
+                        />
                       ) : (
                         <MaterialIcons
                           name="aspect-ratio"
@@ -1252,7 +1295,7 @@ const ClogEditView = ({ route, navigation }) => {
                         style={{
                           ...styles.chatBlock,
                           flexDirection: "column",
-                          justifyContent:
+                          alignItems:
                             Objarr.position === POS_CENTER
                               ? "center"
                               : "flex-end",
@@ -1290,7 +1333,12 @@ const ClogEditView = ({ route, navigation }) => {
                                 <Text
                                   style={{
                                     ...styles.ChatMsg,
-                                    backgroundColor: Objarr.messageColor,
+                                    backgroundColor:
+                                      Objarr.messageColor === null
+                                        ? "#fff"
+                                        : Objarr.messageColor.includes("#")
+                                        ? Objarr.messageColor
+                                        : "#" + Objarr.messageColor,
                                     borderColor: chroma("#BFBFBF")
                                       .alpha(
                                         Objarr.alpha === null ? 1 : Objarr.alpha
@@ -1384,7 +1432,8 @@ const ClogEditView = ({ route, navigation }) => {
                             </View>
                           </View>
                         ) : null}
-                        {Objarr.backgroundType === true ? (
+                        {Objarr.backgroundType === true ||
+                        Objarr.backgroundType === "IMAGE" ? (
                           <View
                             style={{
                               width: "100%",
@@ -1395,7 +1444,14 @@ const ClogEditView = ({ route, navigation }) => {
                             <View key={index} style={styles.effectBlock}>
                               <View>
                                 <Image
-                                  source={{ uri: Objarr.backgroundImage.uri }}
+                                  source={{
+                                    uri:
+                                      Objarr.backgroundType === "IMAGE"
+                                        ? serverManager.getImageUri(
+                                            Objarr.backgroundImage
+                                          )
+                                        : Objarr.backgroundImage.uri,
+                                  }}
                                   style={{
                                     width: 30,
                                     height: 30,
@@ -1424,7 +1480,8 @@ const ClogEditView = ({ route, navigation }) => {
                         key={index}
                         style={{
                           ...styles.chatBlock,
-                          justifyContent:
+                          flexDirection: "column",
+                          alignItems:
                             Objarr.position === POS_CENTER
                               ? "center"
                               : "flex-end",
@@ -1601,6 +1658,77 @@ const ClogEditView = ({ route, navigation }) => {
                             </MenuOptions>
                           )}
                         </Menu>
+                        {Objarr.transformScreen ? (
+                          <View
+                            style={{
+                              width: "100%",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <View key={index} style={styles.effectBlock}>
+                              <AntDesign
+                                name="reload1"
+                                size={24}
+                                color="black"
+                              />
+                              <Text style={styles.effectText}>화면 전환</Text>
+
+                              <TouchableOpacity
+                                style={styles.effectDeleteBtn}
+                                onPress={() => deleteScreenChange(index)}
+                              >
+                                <MaterialIcons
+                                  name="cancel"
+                                  size={30}
+                                  color="black"
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ) : null}
+                        {Objarr.backgroundType === true ||
+                        Objarr.backgroundType === "IMAGE" ? (
+                          <View
+                            style={{
+                              width: "100%",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <View key={index} style={styles.effectBlock}>
+                              <View>
+                                <Image
+                                  source={{
+                                    uri:
+                                      Objarr.backgroundType === "IMAGE"
+                                        ? serverManager.getImageUri(
+                                            Objarr.backgroundImage
+                                          )
+                                        : Objarr.backgroundImage.uri,
+                                  }}
+                                  style={{
+                                    width: 30,
+                                    height: 30,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                              </View>
+                              <Text style={styles.effectText}>전체 배경</Text>
+
+                              <TouchableOpacity
+                                style={styles.effectDeleteBtn}
+                                onPress={() => deleteBgImg(index)}
+                              >
+                                <MaterialIcons
+                                  name="cancel"
+                                  size={30}
+                                  color="black"
+                                />
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        ) : null}
                       </View>
                     );
                   })}
@@ -1676,7 +1804,7 @@ const ClogEditView = ({ route, navigation }) => {
     </MenuProvider>
   ) : (
     <View style={styles.appLoading}>
-      <Text>Loading...</Text>
+      <Text>{lodingText}</Text>
     </View>
   );
 };
